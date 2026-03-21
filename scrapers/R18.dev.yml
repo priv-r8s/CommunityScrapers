@@ -403,7 +403,12 @@ jsonScrapers:
       Details:
         selector: title
         postProcess: *ppUncensor
-      Image: images.jacket_image.large2
+      Image:
+        selector: images.jacket_image.large2
+        postProcess:
+          - replace:
+              - regex: ps\.jpg$
+                with: pl.jpg
       Director: director
       Date: release_date
       Tags:
@@ -432,6 +437,10 @@ jsonScrapers:
         selector: title
       Image:
         selector: images.jacket_image.large2
+        postProcess:
+          - replace:
+              - regex: ps\.jpg$
+                with: pl.jpg
       Date:
         selector: release_date
       URL:
