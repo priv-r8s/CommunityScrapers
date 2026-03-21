@@ -57,6 +57,10 @@ jsonScrapers:
           selector: actresses.#.name_kanji
       Image:
         selector: jacket_full_url
+        postProcess:
+          - replace:
+              - regex: ps\.jpg$
+                with: pl.jpg
       Director:
         selector: directors.#.name_romaji
       Details:
@@ -353,6 +357,10 @@ jsonScrapers:
         selector: release_date
       FrontImage:
         selector: jacket_full_url
+        postProcess:
+          - replace:
+              - regex: ps\.jpg$
+                with: pl.jpg
       Director:
         selector: directors.#.name_romaji
       Synopsis:
