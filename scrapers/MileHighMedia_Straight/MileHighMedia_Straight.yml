@@ -4,6 +4,7 @@ name: Mile High Media (Straight)
 galleryByURL:
   - action: script
     url:
+      - adultmobile.com/scene/
       - milehighmedia.com/scene/
       - dilfed.com/scene/
       - doghousedigital.com/scene/
@@ -25,6 +26,7 @@ galleryByFragment:
 sceneByURL:
   - action: script
     url:
+      - adultmobile.com/scene/
       - milehighmedia.com/scene/
       - dilfed.com/scene/
       - doghousedigital.com/scene/
@@ -106,4 +108,4 @@ groupByURL:
       - python
       - MileHighMedia_Straight.py
       - movie-by-url
-# Last Updated January 14, 2024
+# Last Updated April 3, 2026
