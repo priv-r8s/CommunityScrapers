@@ -47,7 +47,22 @@ jsonScrapers:
   sceneScraper:
     scene:
       Title:
-        selector: dvd_id
+        selector: content_id
+        postProcess: &ppTitle
+          # dvd_id is frequently null on r18.dev, so derive the canonical JAV
+          # code from content_id (always present). The content_id number is
+          # zero-padded to 5 digits; canonical codes strip leading zeros but
+          # keep a minimum of 3 digits:
+          #   "ngod00322" -> "NGOD-322"   "h_1419nmsl00012" -> "NMSL-012"
+          # (shape: [A-Z]{2,8}-[0-9]{1,6}, with buffer for unusual codes)
+          - javascript: |
+              var m = value.match(/([a-zA-Z]+)(\d+)/);
+              if (m) {
+                var n = m[2].replace(/^0+/, "");
+                while (n.length < 3) { n = "0" + n; }
+                return m[1].toUpperCase() + "-" + n;
+              }
+              return value.toUpperCase();
       Date:
         selector: release_date
       Performers:
@@ -330,7 +345,14 @@ jsonScrapers:
       Studio:
         Name: maker_name_en
       Code:
-        selector: dvd_id
+        selector: content_id
+        postProcess: &ppStudioCode
+          # Studio code = the letter prefix of the JAV code (the letter run that
+          # is immediately followed by the number). "ngod00322" -> "NGOD"
+          - javascript: |
+              var m = value.match(/([a-zA-Z]+)(\d+)/);
+              if (m) { return m[1].toUpperCase(); }
+              return value.toUpperCase();
       Tags:
         Name:
           selector: categories.#.name_en
@@ -345,7 +367,8 @@ jsonScrapers:
   movieScraper:
     group:
       Name:
-        selector: dvd_id
+        selector: content_id
+        postProcess: *ppTitle
       Aliases: title_ja
       Duration:
         selector: runtime_mins
@@ -375,31 +398,20 @@ jsonScrapers:
               - regex: ^
                 with: https://r18.dev/videos/vod/movies/detail/-/id=
 
-  # Used for fragment scraping - the api is a little messy if we don't have the exact ID and need to do a search because the search result api doesn't have all the info we need.
-  # So we get the ID from the search result page and make another search for it
+  # Used for fragment scraping. The search endpoint omits dvd_id (and dvd_id is
+  # often null even on the detail endpoint), so Title/Code are derived locally
+  # from content_id instead of issuing a second query per field.
   # Note I am not getting aliases yet for performers here as it didn't seem worth it to make that many subqueries. You should hopefully be matching them up with StashDB versions of the performers
   # or doing a performer search anyways.
   # I've also sent in a request to the dev of the site to make their API a little easier to use, so hopefully that goes through and we can have our cake and eat it too. :)
   sceneSearchIndirect:
     scene:
-      # Title not on this page, so we need to fetch another page to get it
       Title:
         selector: content_id
-        postProcess:
-          - replace:
-              - regex: (.+)
-                with: https://r18.dev/videos/vod/movies/detail/-/combined=$1/json
-          - subScraper:
-              selector: dvd_id
-      # Code not on this page, so we need to fetch another page to get it. It's the same as title. Surely there must be a way to only query once?
+        postProcess: *ppTitle
       Code:
         selector: content_id
-        postProcess:
-          - replace:
-              - regex: (.+)
-                with: https://r18.dev/videos/vod/movies/detail/-/combined=$1/json
-          - subScraper:
-              selector: dvd_id
+        postProcess: *ppStudioCode
       Details:
         selector: title
         postProcess: *ppUncensor
@@ -434,7 +446,16 @@ jsonScrapers:
   sceneSearch:
     scene:
       Title:
+        selector: content_id
+        postProcess: *ppTitle
+      Code:
+        selector: content_id
+        postProcess: *ppStudioCode
+      # Force the code into the Title, but keep the descriptive title as Details
+      # so the metadata isn't lost.
+      Details:
         selector: title
+        postProcess: *ppUncensor
       Image:
         selector: images.jacket_image.large2
         postProcess:
@@ -449,4 +470,4 @@ jsonScrapers:
           - replace:
               - regex: (.+)
                 with: https://r18.dev/videos/vod/movies/detail/-/combined=$1/json
-# Last Updated August 22, 2023
+# Last Updated June 8, 2026
