@@ -1,0 +1,19 @@
+name: Validate Scrapers
+
+# Forgejo uses the first workflow dir found (.forgejo > .gitea > .github),
+# so this file also keeps the GitHub-only deploy.yml from running here.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+    # absolute URL: the instance resolves bare actions against data.forgejo.org,
+    # which does not mirror denoland/setup-deno
+    - uses: https://github.com/denoland/setup-deno@v2
+    - run: deno -R -E ./validate.js --ci
